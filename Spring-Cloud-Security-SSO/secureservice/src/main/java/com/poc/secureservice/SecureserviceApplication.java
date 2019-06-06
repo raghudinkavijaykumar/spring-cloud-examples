@@ -3,22 +3,36 @@ package com.poc.secureservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 
 @SpringBootApplication
-@EnableResourceServer
+
 @RestController
 public class SecureserviceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SecureserviceApplication.class, args);
 	}
+	//added
+	@Autowired
+	private ResourceServerProperties sso;
 
+	//added
+	@Bean
+	public ResourceServerTokenServices myUserInfoTokenServices() {
+		return new CustomUserInfoTokenServices(sso.getUserInfoUri(), sso.getClientId());
+	}
+
+	@PreAuthorize("#oauth2.hasScope('toll_read') and hasAuthority('ROLE_OPERATOR')")
 	@RequestMapping("/tolldata")
 	public ArrayList<TollUsage> getTollData() {
 
